@@ -1,0 +1,15 @@
+---
+- name: Build OpenDaylight
+  hosts: localhost
+    - { role: build }
+  when: action is defined and action == 'build'
+
+- name: Provision OpenDaylight - Post Tasks
+  hosts: localhost
+    - { role: provision }
+  when: action is defined and action == 'provision'
+
+- name: Deploy Overcloud with OpenDaylight
+  hosts: localhost
+    - { role: install }
+  when: action is defined and action == 'install'
