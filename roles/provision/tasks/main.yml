@@ -1,0 +1,3 @@
+---
+- name: Do nothing
+  shell: echo "Now is not the time for fear, that comes later."
