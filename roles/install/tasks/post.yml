@@ -1,0 +1,10 @@
+- name: Workaround for BZ#1443006
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Modify opendaylight-api.yaml file
+      lineinfile:
+        regexp: "OpenDayLightConnectionProtocol"
+        dest: /usr/share/openstack-tripleo-heat-templates/puppet/services/opendaylight-api.yaml
+        line: "        opendaylight::nb_connection_protocol: {get_param: OpenDaylightConnectionProtocol}"
+        backrefs: yes
