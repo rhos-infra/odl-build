@@ -5,7 +5,7 @@
   tasks:
     - name: Set VLAN interface for public API network
       template:
-          src: odl-vlan.cfg.j2
+          src: "../templates/odl-vlan.cfg.j2"
           dest: "/etc/sysconfig/network-scripts/ifcfg-{{odl.public_interface.address}}{{odl.public_interface.vlan}}"
 
     - name: Setting up interface for public API on undercloud
