@@ -19,9 +19,9 @@ resource_registry:
   OS::TripleO::CephStorage::Net::SoftwareConfig: three-nics-vlans/ceph-storage.yaml
 
 parameter_defaults:
-    ExternalNetCidr: '1.1.1.0/24'
-    ExternalAllocationPools: [{'start': '1.1.1.101', 'end': '1.1.1.149'}]
-    ExternalInterfaceDefaultRoute: '1.1.1.1'
+    ExternalNetCidr: '10.0.0.0/24'
+    ExternalAllocationPools: [{'start': '10.0.0.101', 'end': '10.0.0.149'}]
+    ExternalInterfaceDefaultRoute: '10.0.0.1'
     ExternalNetworkVlanID: 10
     InternalApiNetCidr: '172.17.1.0/24'
     InternalApiAllocationPools: [{'start': '172.17.1.10', 'end': '172.17.1.200'}]
@@ -40,4 +40,6 @@ parameter_defaults:
     ControlPlaneDefaultRoute: 192.168.24.1
     ControlPlaneSubnetCidr: "24"
     NeutronExternalNetworkBridge: "''"
-    OpenDaylightProviderMappings: "datacentre:eth2"
+    OpenDaylightProviderMappings: "datacentre:br-ex"
+    NeutronNetworkType: vxlan
+    NeutronTunnelTypes: vxlan
