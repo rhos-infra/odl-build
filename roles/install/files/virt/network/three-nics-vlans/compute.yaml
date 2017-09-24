@@ -126,7 +126,7 @@ resources:
               # This will default to br-ex, anything else requires specific
               # brige mapping entries for it to be used.
               name: {get_input: bridge_name}
-              use_dhcp: false
+              use_dhcp: true
               members:
                 -
                   type: interface
