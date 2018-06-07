@@ -1,0 +1,8 @@
+---
+parameter_defaults:
+    OpenDaylightFeatures: [odl-mdsal-trace, odl-netvirt-openstack]
+    OpenDaylightLogMechanism: 'file'
+    ExtraConfig:
+      opendaylight::log_levels:
+        org.opendaylight.openflowplugin.impl: 'TRACE'
+      opendaylight::log_max_rollover_config: 50
