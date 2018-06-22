@@ -1,6 +1,6 @@
 ---
 parameter_defaults:
-    OpenDaylightFeatures: [odl-mdsal-trace, odl-netvirt-openstack]
+    OpenDaylightFeatures: [odl-mdsal-trace, odl-jolokia, odl-netvirt-openstack]
     OpenDaylightLogMechanism: 'file'
     ExtraConfig:
       opendaylight::log_levels:
