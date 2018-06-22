@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "74ff07b8_698d81ba",
+        "filename": "OSP13/roles/install/files/virt/log_levels/genius.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1014524
+      },
+      "writtenOn": "2018-06-22T11:40:07Z",
+      "side": 1,
+      "message": "swap the features please. Installing jolokia before netvirt causes issues.",
+      "range": {
+        "startLine": 3,
+        "startChar": 44,
+        "endLine": 3,
+        "endChar": 78
+      },
+      "revId": "557194413350bdfd86aa3517b52f556bdcd27f19",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5784f19_8f7ae67a",
+        "filename": "OSP13/roles/install/files/virt/log_levels/genius.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1014524
+      },
+      "writtenOn": "2018-06-22T11:40:07Z",
+      "side": 1,
+      "message": "If both the files are in this patch are to be used together always, no need to repeat this config here. Only in one of the files should suffice. Same for OpenDaylightFeatures and OpenDaylightLogMechanism",
+      "range": {
+        "startLine": 8,
+        "startChar": 6,
+        "endLine": 8,
+        "endChar": 47
+      },
+      "revId": "557194413350bdfd86aa3517b52f556bdcd27f19",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8cd35946_6835fbff",
+        "filename": "OSP13/roles/install/files/virt/log_levels/openflowplugin.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1014524
+      },
+      "writtenOn": "2018-06-22T11:40:07Z",
+      "side": 1,
+      "message": "should be log_max_rollover",
+      "range": {
+        "startLine": 8,
+        "startChar": 20,
+        "endLine": 8,
+        "endChar": 43
+      },
+      "revId": "557194413350bdfd86aa3517b52f556bdcd27f19",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
