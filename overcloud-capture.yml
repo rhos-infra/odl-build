@@ -1,0 +1,275 @@
+#!/usr/bin/ansible-playbook
+
+- name: Discover overcloud servers
+  hosts: localhost
+  gather_facts: yes
+  any_errors_fatal: true
+  tags: discover_overcloud
+  # TODO: make these global variables defined only once instead of twice (here and in next play)
+  # but do it without using external file because we want to be able to download only one (this) file and run it
+  vars:
+    output_dir: "/var/log/overcloud_capture"
+    run_datetime: "{{ ansible_date_time.year + ansible_date_time.month + ansible_date_time.day +
+     '_' + ansible_date_time.hour + ansible_date_time.minute + ansible_date_time.second }}"
+    test_name_short: "{{ lookup('env', 'TEST_NAME').split(' ')[0] | default('no_test_name', true) }}"
+    sos_plugins: [ 'networking', 'openstack_nova', 'openstack_neutron', 'openvswitch', 'opendaylight' ]
+    output_dir_sosreport: "{{ output_dir }}/{{ run_datetime }}-{{ test_name_short }}-sosreport-{{ inventory_hostname }}"
+    output_dir_odltools: "{{ output_dir }}/{{ run_datetime }}-{{ test_name_short }}-odltools-{{ inventory_hostname }}"
+    overcloud_capture_virtualenv: "/tmp/overcloud_capture_virtualenv.{{ run_datetime }}"
+  tasks:
+    - name: list Overcloud servers based on stackrc
+      shell: |
+        . {{ stackrc | default('/home/stack/stackrc') }}
+        openstack server list -f csv --quote minimal -c Name -c Networks|grep -v "Name,Networks"
+      register: stackrc_server_list
+
+    - name: discover overcloud servers using stackrc file
+      vars:
+        server_name: "{{ item.split(',')[0] }}"
+        server_ip: "{{ item.split(',')[1].split('=')[1] }}"
+      set_fact:
+        overcloud_servers: "{{ overcloud_servers | default({}) | combine({ server_name: { 'ip': server_ip } }) }}"
+      with_items: "{{ stackrc_server_list.stdout_lines | sort }}"
+
+    - name: update inventory with discovered overcloud servers
+      add_host:
+        name: "{{ item.key }}"
+        ansible_host: "{{ item.value.ip }}"
+        groups: "overcloud"
+        ansible_ssh_user: "heat-admin"
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      with_dict: "{{ overcloud_servers }}"
+
+    - name: load overcloud variables
+      set_fact:
+        overcloudrc: "{{ lookup('file', item) }}"
+      with_first_found:
+        - "/home/stack/overcloudrc"
+      tags: os_environment
+
+    - name: convert OS_ environment variables to ansible fact (dict)
+      vars:
+        var_name: "{{ item.split('=')[0] | regex_replace('^(export )*(\\w+)', '\\2') | default('noname') }}"
+        var_value: "{{ item.split('=')[1] | default('novalue') | trim }}"
+      set_fact:
+        overcloud_os_env: "{{ overcloud_os_env | default({}) | combine({ var_name: var_value }) }}"
+      when: item | regex_search('^(export )*(\\w+)=')
+      with_items: "{{ overcloudrc.split('\n') }}"
+      no_log: true
+      tags: os_environment
+
+    - debug:
+        var: overcloud_os_env
+
+- name: Capture sosreports on overcloud servers
+  hosts: overcloud
+  gather_facts: yes
+  # opportunistic capturing = capture whatever is possible and ignore problems
+  any_errors_fatal: false
+  vars:
+    output_dir: "/var/log/overcloud_capture"
+    run_datetime: "{{ ansible_date_time.year + ansible_date_time.month + ansible_date_time.day +
+     '_' + ansible_date_time.hour + ansible_date_time.minute + ansible_date_time.second }}"
+    test_name_short: "{{ lookup('env', 'TEST_NAME').split(' ')[0] | default('no_test_name', true) }}"
+    sos_plugins: [ 'networking', 'openstack_nova', 'openstack_neutron', 'openvswitch', 'opendaylight' ]
+    output_dir_sosreport: "{{ output_dir }}/{{ run_datetime }}-{{ test_name_short }}-sosreport-{{ inventory_hostname }}"
+    output_dir_odltools: "{{ output_dir }}/{{ run_datetime }}-{{ test_name_short }}-odltools-{{ inventory_hostname }}"
+    overcloud_capture_virtualenv: "/tmp/overcloud_capture_virtualenv.{{ run_datetime }}"
+    overcloud_os_env: "{{ hostvars['localhost'].overcloud_os_env }}"
+  tasks:
+    - name: "ensure {{ output_dir }} exists on localhost"
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: 0777
+      delegate_to: localhost
+      become: true
+      tags: always
+
+    # TODO: enable checking and installing new sos
+#    - name: update sosreport ('sos' package) to latest
+#      yum:
+#        name: sos
+#        state: installed
+#      ignore_errors: true
+#      register: sosreport_version
+
+#
+#    - name: check version of sosreport ('sos' package)
+#      yum:
+#        list: sosreport
+#        state: present
+#      register: sosreport_check
+#
+#    - debug:
+#        var: sosreport_version
+
+#    - name: install sosreport 3.5
+#      yum:
+#        package: https://url.corp.redhat.com/sos-3-5-5-el7-noarch-rpm
+#      when: "{{ sosreport_version.results[0].split('-')[0] != 'sos' }} or ({{ sosreport_version.results[0].split('-')[1].split('.')[0] <= 4 }} and {{ sosreport_version.results[0].split('-')[1].split('.')[1] >= 5) }}"
+
+#    - name: install sosreport 3.5
+#      yum:
+#        name: "https://url.corp.redhat.com/sos-3-5-5-el7-noarch-rpm"
+#        state: present
+#      ignore_errors: true
+
+    - name: run sosreport
+      shell: |
+        env
+        mkdir -p {{ output_dir_sosreport }}
+        sosreport --batch --build --tmp-dir {{ output_dir_sosreport }} \
+           --name="'{{ test_name_short }}-{{ inventory_hostname }}'" -o {{ sos_plugins | join(',') }}
+      environment: |
+        {%- if inventory_hostname == "controller-0" -%}
+        {{ overcloud_os_env }}
+        {%- else -%}
+        overcloud_os_env: not_loaded
+        {%- endif %}
+      become: true
+      register: run_sosreport
+      tags: sosreport
+
+    - name: run chmod 0777 on sosreport output dir
+      file:
+        path: "{{ output_dir_sosreport }}"
+        mode: 0777
+        recurse: true
+      when:
+        - run_sosreport.rc is defined
+        - run_sosreport.rc == 0
+      become: true
+      tags: sosreport
+
+    - name: archive sosreport captures into tar.gz
+      archive:
+        path: "{{ output_dir }}/{{ output_dir_sosreport | basename }}"
+        dest: "{{ output_dir }}/{{ output_dir_sosreport | basename }}.tar.gz"
+        mode: 0777
+      register: archive_sosreport
+      when:
+        - run_sosreport.rc is defined
+        - run_sosreport.rc == 0
+      become: true
+      tags: sosreport
+
+    - name: remove sosreport captures directories if archivization suceeded
+      file:
+        path: "{{ output_dir }}/{{ output_dir_sosreport | basename }}"
+        state: absent
+      when: run_sosreport.rc is not defined or archive_sosreport.get('archived', [])[0] | default('') is defined
+      become: true
+      tags: sosreport
+
+    - name: fetch sosreport captures archives from overcloud nodes
+      synchronize:
+        mode: pull
+        src: "{{ output_dir }}/{{ output_dir_sosreport | basename }}.tar.gz"
+        dest: "{{ output_dir }}"
+      environment:
+        - PATH: '$PATH:/usr/bin'
+      when: archive_sosreport.get('archived', [])[0] is defined
+      register: fetch_sosreport
+      tags: sosreport
+
+    - name: remove sosreport archived captures if fetched succesfully
+      file:
+        path: "{{ output_dir }}/{{ output_dir_sosreport | basename }}.tar.gz"
+        state: absent
+      when:
+        - fetch_sosreport.rc is defined
+        - fetch_sosreport.rc == 0
+      become: true
+      tags: sosreport
+
+    - name: "chmod 0777 on {{ output_dir }}"
+      file:
+        path: "{{ output_dir }}"
+        mode: 0777
+        recurse: true
+      delegate_to: localhost
+      become: true
+      tags: sosreport
+
+    # TODO: make sure the pip install is _not_ system-wide
+    - name: install pip using easy_install
+      easy_install:
+        name: pip
+        state: latest
+      tags: odltools
+      become: true
+      ignore_errors: true
+
+    - name: install odltools
+      pip:
+        name: odltools
+        state: latest
+      become: true
+      tags: odltools
+
+    - name: run odltools captures
+      shell: |
+        set -e
+        ODL_IP=$(sudo awk '$0 ~ /bind 172.17.*8081/ { \
+          match($0, /([0-9]+.){4}/); \
+          print substr($0, RSTART, RLENGTH-1) \
+          }' /var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg | head -1)
+
+          python -m odltools model get -i $ODL_IP -t 8081 -u odladmin -w redhat -p {{ output_dir_odltools }}
+      become: true
+      ignore_errors: true
+      register: run_odltools
+      tags: odltools
+
+    - name: "chmod 0777 on dir in {{ output_dir }}"
+      file:
+        path: "{{ output_dir }}/{{ output_dir_odltools | basename }}"
+        mode: 0777
+        recurse: true
+      become: true
+      when:
+        - run_odltools.rc is defined
+        - run_odltools.rc == 0
+      tags: odltools
+
+    - name: archive odltools captures into tar.gz
+      archive:
+        path: "{{ output_dir }}/{{ output_dir_odltools | basename }}"
+        dest: "{{ output_dir }}/{{ output_dir_odltools | basename }}.tar.gz"
+        mode: 0777
+      register: archive_odltools
+      when:
+        - run_odltools.rc is defined
+        - run_odltools.rc == 0
+      become: true
+      tags: odltools
+
+    - name: remove odltools captures directories if archivization suceeded
+      file:
+        path: "{{ output_dir }}/{{ output_dir_odltools | basename }}"
+        state: absent
+      when: run_odltools.rc is not defined or archive_odltools.get('archived', [])[0] | default('') is defined
+      become: true
+      tags: odltools
+
+    - name: fetch odltools captures archives from overcloud nodes
+      synchronize:
+        mode: pull
+        src: "{{ output_dir }}/{{ output_dir_odltools | basename }}.tar.gz"
+        dest: "{{ output_dir }}"
+      when: archive_odltools.get('archived', [])[0] is defined
+      environment:
+        - PATH: '$PATH:/usr/bin'
+      register: fetch_odltools
+      tags: odltools
+
+    - name: remove odltools archived captures if fetched successfully
+      file:
+        path: "{{ output_dir }}/{{ output_dir_odltools | basename }}.tar.gz"
+        state: absent
+      when:
+        - fetch_odltools.rc is defined
+        - fetch_odltools.rc == 0
+      become: true
+      tags: odltools
