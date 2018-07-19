@@ -1,5 +1,10 @@
 #!/usr/bin/ansible-playbook
 
+#overcloud-capture aims to be single-file playbook to discover Overcloud nodes and then capture data, logs, sosreports, odltools and any other information useful while debugging issues.
+#
+#Environment it's written for and tested against is a Tripleo deployment and it should be run from undercloud machine. It should not require InfraRed or any other tool except Ansible to be installed although I don't see why not to make it
+#a plugin of Infrared it if someone has time to do so.
+
 - name: Discover overcloud servers
   hosts: localhost
   gather_facts: yes
