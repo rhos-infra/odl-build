@@ -1,0 +1,46 @@
+# This is a template for IPv6 deployments over underlay network.
+# Tenant network is still IPv4.
+
+parameter_defaults:
+    ControlPlaneDefaultRoute: 192.168.24.1
+    ControlPlaneSubnetCidr: '24'
+    DnsServers:
+    - 10.0.0.1
+    EC2MetadataIp: 192.168.24.1
+    ExternalAllocationPools:
+    -   end: 2620:52:0:13b8:5054:ff:fe3e:aa
+        start: 2620:52:0:13b8:5054:ff:fe3e:1
+    ExternalInterfaceDefaultRoute: 2620:52:0:13b8::fe
+    ExternalNetCidr: 2620:52:0:13b8::/64
+    ExternalNetworkVlanID: 10
+    InternalApiAllocationPools:
+    -   end: fd00:fd00:fd00:2000:aaaa:aaaa:ffff:fffe
+        start: fd00:fd00:fd00:2000::10
+    InternalApiNetCidr: fd00:fd00:fd00:2000::/64
+    InternalApiNetworkVlanID: 20
+    NeutronExternalNetworkBridge: ''''''
+    NeutronNetworkType: vxlan
+    NeutronTunnelTypes: vxlan
+    OpenDaylightProviderMappings: datacentre:br-ex
+    NtpServer:
+    - clock.redhat.com
+    StorageAllocationPools:
+    -   end: fd00:fd00:fd00:3000:aaaa:aaaa:ffff:fffe
+        start: fd00:fd00:fd00:3000::10
+    StorageMgmtAllocationPools:
+    -   end: fd00:fd00:fd00:4000:aaaa:aaaa:ffff:fffe
+        start: fd00:fd00:fd00:4000::10
+    StorageMgmtNetCidr: fd00:fd00:fd00:4000::/64
+    StorageNetCidr: fd00:fd00:fd00:3000::/64
+    StorageNetworkVlanID: 30
+    TenantAllocationPools:
+    -   end: 172.17.2.149
+        start: 172.17.2.10
+    TenantNetCidr: 172.17.2.0/24
+    TenantNetworkVlanID: 50
+resource_registry:
+    OS::TripleO::BlockStorage::Net::SoftwareConfig: three-nics-vlans/cinder-storage.yaml
+    OS::TripleO::CephStorage::Net::SoftwareConfig: three-nics-vlans/ceph-storage.yaml
+    OS::TripleO::Compute::Net::SoftwareConfig: three-nics-vlans/compute.yaml
+    OS::TripleO::Controller::Net::SoftwareConfig: three-nics-vlans/controller.yaml
+    OS::TripleO::ObjectStorage::Net::SoftwareConfig: three-nics-vlans/swift-storage.yaml

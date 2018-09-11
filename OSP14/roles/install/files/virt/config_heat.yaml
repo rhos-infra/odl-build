@@ -1,0 +1,3 @@
+parameter_defaults:
+    ComputeExtraConfig:
+        nova::compute::consecutive_build_service_disable_threshold: '0'
