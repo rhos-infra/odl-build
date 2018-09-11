@@ -1,0 +1,12 @@
+---
+- name: undercloud post provision
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Set VLAN interface for public API network
+      template:
+          src: "../templates/odl-vlan.cfg.j2"
+          dest: "/etc/sysconfig/network-scripts/ifcfg-{{odl.public_interface.address}}{{odl.public_interface.vlan}}"
+
+    - name: Setting up interface for public API on undercloud
+      shell: ifup "{{odl.public_interface.address}}{{odl.public_interface.vlan}}"
