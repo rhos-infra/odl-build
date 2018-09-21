@@ -153,6 +153,7 @@
         dest: "{{ output_dir }}/{{ output_dir_sosreport | basename }}.tar.gz"
         mode: 0777
       register: archive_sosreport
+      ignore_errors: true # because sometimes symlinks point to files that don't exist and we don't want to fail the whole archiving because of that
       when:
         - run_sosreport.rc is defined
         - run_sosreport.rc == 0
@@ -244,6 +245,7 @@
         dest: "{{ output_dir }}/{{ output_dir_odltools | basename }}.tar.gz"
         mode: 0777
       register: archive_odltools
+      ignore_errors: true # because sometimes symlinks point to files that don't exist and we don't want to fail the whole archiving because of that
       when:
         - run_odltools.rc is defined
         - run_odltools.rc == 0
