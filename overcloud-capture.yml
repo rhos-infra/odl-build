@@ -121,17 +121,18 @@
 #      ignore_errors: true
 
     - name: run sosreport
+      vars:
+        env: |
+          {%- if inventory_hostname == "controller-0" -%}
+          {{ overcloud_os_env }}
+          {%- else -%}
+          overcloud_os_env: not_loaded
+          {%- endif %}
       shell: |
-        env
         mkdir -p {{ output_dir_sosreport }}
         sosreport --batch --build --tmp-dir {{ output_dir_sosreport }} \
            --name="'{{ test_name_short }}-{{ inventory_hostname }}'" -o {{ sos_plugins | join(',') }}
-      environment: |
-        {%- if inventory_hostname == "controller-0" -%}
-        {{ overcloud_os_env }}
-        {%- else -%}
-        overcloud_os_env: not_loaded
-        {%- endif %}
+      environment: "{{ env }}"
       become: true
       register: run_sosreport
       tags: sosreport
@@ -141,9 +142,7 @@
         path: "{{ output_dir_sosreport }}"
         mode: 0777
         recurse: true
-      when:
-        - run_sosreport.rc is defined
-        - run_sosreport.rc == 0
+      ignore_errors: true
       become: true
       tags: sosreport
 
@@ -154,9 +153,6 @@
         mode: 0777
       register: archive_sosreport
       ignore_errors: true # because sometimes symlinks point to files that don't exist and we don't want to fail the whole archiving because of that
-      when:
-        - run_sosreport.rc is defined
-        - run_sosreport.rc == 0
       become: true
       tags: sosreport
 
@@ -175,7 +171,7 @@
         dest: "{{ output_dir }}"
       environment:
         - PATH: '$PATH:/usr/bin'
-      when: archive_sosreport.get('archived', [])[0] is defined
+      ignore_errors: true
       register: fetch_sosreport
       tags: sosreport
 
