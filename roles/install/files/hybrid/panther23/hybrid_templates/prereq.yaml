@@ -1,0 +1,4 @@
+parameter_defaults:
+    NeutronServicePlugins: qos,router,trunk
+    NeutronOVSFirewallDriver: openvswitch
+    NeutronFirewallDriver: openvswitch

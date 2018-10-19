@@ -1,0 +1,54 @@
+parameter_defaults:
+    ControlPlaneDefaultRoute: 192.168.24.1
+    ControlPlaneSubnetCidr: '24'
+    DnsServers:
+      - 10.46.0.31
+    EC2MetadataIp: 192.168.24.1
+    ExternalAllocationPools:
+      - end: 10.46.23.154
+        start: 10.46.23.135
+    ExternalInterfaceDefaultRoute: 10.46.23.190
+    ExternalNetCidr: 10.46.23.190/26
+    ExternalNetworkVlanID: 316
+    InternalApiAllocationPools:
+      - end: 172.17.1.200
+        start: 172.17.1.10
+    InternalApiNetCidr: 172.17.1.0/24
+    InternalApiNetworkVlanID: 140
+    NeutronBridgeMappings: datacentre:br-ex,tenant:br-isolated
+    NeutronExternalNetworkBridge: ''
+    NeutronNetworkType: vxlan
+    NeutronNetworkVLANRanges: tenant:1000:2000
+    NeutronTunnelTypes: vxlan
+    StorageAllocationPools:
+      - end: 172.17.3.200
+        start: 172.17.3.10
+    StorageMgmtAllocationPools:
+      - end: 172.17.4.200
+        start: 172.17.4.10
+    StorageMgmtNetCidr: 172.17.4.0/24
+    StorageMgmtNetworkVlanID: 141
+    StorageNetCidr: 172.17.3.0/24
+    StorageNetworkVlanID: 142
+    TenantAllocationPools:
+      - end: 172.17.2.200
+        start: 172.17.2.10
+    TenantNetCidr: 172.17.2.0/24
+    TenantNetworkVlanID: 143
+    # Nova flavor to use.
+    OvercloudControllerFlavor: controller
+    OvercloudComputeFlavor: compute
+    ControllerHostnameFormat: 'controller-%index%'
+    ComputeHostnameFormat: 'compute-%index%'
+    CephStorageHostnameFormat: 'ceph-%index%'
+    ObjectStorageHostnameFormat: 'swift-%index%'
+    #Number of nodes to deploy.
+    ControllerCount: 1
+    ComputeCount: 1
+    # NTP server configuration.
+    NtpServer: clock.redhat.com
+    SshServerOptions:
+      UseDns: 'no'
+resource_registry:
+    OS::TripleO::Compute::Net::SoftwareConfig: nic-configs/compute.yaml
+    OS::TripleO::Controller::Net::SoftwareConfig: nic-configs/controller.yaml

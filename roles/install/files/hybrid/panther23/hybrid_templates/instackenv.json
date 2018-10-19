@@ -1,0 +1,15 @@
+{
+    "nodes":[
+        {
+            "name":"compute-0",
+            "cpu":"8",
+            "memory":"8192",
+            "disk":"50",
+            "arch":"x86_64",
+            "pm_type":"pxe_ipmitool",
+            "pm_user":"admin",
+            "pm_password":"admin",
+            "pm_addr":"10.46.2.43"
+        }
+    ]
+}

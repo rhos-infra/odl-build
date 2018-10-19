@@ -1,0 +1,8 @@
+---
+subnet:
+    cidr: 10.46.23.190/26
+    name: external_subnet
+    gateway: 10.46.23.190
+    allocation_pool:
+        start: 10.46.23.155
+        end: 10.46.23.185
