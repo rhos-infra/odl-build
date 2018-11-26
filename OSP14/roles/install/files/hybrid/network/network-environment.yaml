@@ -1,0 +1,70 @@
+parameter_defaults:
+    # it's more of a personal preference but using UTC is the safest bet when it comes to comparing timestamps between overcloud nodes
+    # and other services (on undercloud, overcloud container, external world (i.e.: laptop) etc.) when troubleshooting issues
+    TimeZone: 'UTC'
+
+    # since the control plane is mainly for controlling overcloud nodes (from undercloud machine) this IP should be one of
+    # undercloud's, it's the IP of 'br-ctlplane' bridge on undercloud
+    # it is br-ctlplane or whatever the name the was given as part of network definition ran as part of 'infrared virsh' provisioning (most likely for its 'net1')
+    ControlPlaneDefaultRoute: 192.168.24.1
+    ControlPlaneSubnetCidr: '24'
+
+    # safest bet is to use IT/lab provided DNS servers (NOTE: that is only possible if all overcloud nodes will have access to external/IT/lab network)
+    # if you specify IP(s) of undercloud/hypervisor here you also have to make sure there's a DNS/bind/dnsmasq server listening
+    # on that specific IP so overcloud nodes can run DNS requests against it
+    # NOTE: when your networks (net1, net2, etc.) on the hypervisor get created as part of 'infrared virsh' command and they have
+    # 'dhcp:' option specificed then this will make dhcp+dns server running on that interface/IP - then you could use this IP in the below
+    # DnsServers param
+    DnsServers: [ "10.46.0.31", "10.46.0.32" ]
+
+    # IP of the nova_api that also serves as metadata service, the nova_api which deployed Overcloud is running on Undercloud hence
+    # its IP should be specified here
+    EC2MetadataIp: 192.168.24.1
+
+    # for virsh deployments it would be something around 10.0.0.x IPs
+    # for hybrid/baremetal deployments the below IPs will be the ones given by IT/lab to be used by Overcloud as, for example, floating IP of guest VMs on Overcloud
+    ExternalAllocationPools:
+    -   start: 10.46.23.135
+        end: 10.46.23.154
+
+    # the gateway that Overcloud nodes will use to connect to external (IT/lab/internet) networks could be either the IP of the hypervisor given by IT/lab DHCP
+    # or a gateway IP that IT/lab has created specifically for this hybrid/baremetal deployment
+    ExternalInterfaceDefaultRoute: 10.46.23.190
+    ExternalNetCidr: 10.46.23.190/26
+
+    # if the interface (the nic) used for 'external' network (as configured via infrared virsh command) is a physical one, then the VlanID is the one assigned by the IT/lab ppl for that nic
+    ExternalNetworkVlanID: 316
+
+    # behind this cryptic name of InternalApi is the network/IPs that Overcloud nodes will use to communicate between each other (in other words: the control plane of the Overcloud)
+    InternalApiAllocationPools:
+    -   end: 172.17.162.200
+        start: 172.17.162.10
+    InternalApiNetCidr: 172.17.162.0/24
+    InternalApiNetworkVlanID: 162
+
+    NeutronExternalNetworkBridge: ''''''
+    NeutronNetworkType: vxlan
+    NeutronTunnelTypes: vxlan
+    OpenDaylightProviderMappings: datacentre:br-ex
+    StorageAllocationPools:
+    -   end: 172.17.163.200
+        start: 172.17.163.10
+    StorageMgmtAllocationPools:
+    -   end: 172.17.164.200
+        start: 172.17.164.10
+    StorageMgmtNetCidr: 172.17.164.0/24
+    StorageMgmtNetworkVlanID: 164
+    StorageNetCidr: 172.17.163.0/24
+    StorageNetworkVlanID: 163
+    TenantAllocationPools:
+    -   end: 172.17.165.200
+        start: 172.17.165.10
+    TenantNetCidr: 172.17.165.0/24
+    TenantNetworkVlanID: 165
+
+resource_registry:
+    OS::TripleO::BlockStorage::Net::SoftwareConfig: three-nics-vlans-hybrid/cinder-storage.yaml
+    OS::TripleO::CephStorage::Net::SoftwareConfig: three-nics-vlans-hybrid/ceph-storage.yaml
+    OS::TripleO::Compute::Net::SoftwareConfig: three-nics-vlans-hybrid/compute.yaml
+    OS::TripleO::Controller::Net::SoftwareConfig: three-nics-vlans-hybrid/controller.yaml
+    OS::TripleO::ObjectStorage::Net::SoftwareConfig: three-nics-vlans-hybrid/swift-storage.yaml

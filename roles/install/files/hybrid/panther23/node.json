@@ -13,20 +13,6 @@
             "pm_user":"admin",
             "pm_password":"admin",
             "pm_addr":"10.46.2.45"
-        },
-        {
-            "mac":[
-                "14:02:ec:7c:88:45"
-            ],
-            "name":"compute-1",
-            "cpu":"32",
-            "memory":"125000",
-            "disk":"300",
-            "arch":"x86_64",
-            "pm_type":"pxe_ipmitool",
-            "pm_user":"admin",
-            "pm_password":"admin",
-            "pm_addr":"10.46.2.44"
         }
     ]
 }
