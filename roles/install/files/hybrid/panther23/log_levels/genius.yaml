@@ -1,0 +1,7 @@
+---
+parameter_defaults:
+    OpenDaylightFeatures: [odl-mdsal-trace, odl-netvirt-openstack, odl-jolokia]
+    ExtraConfig:
+      opendaylight::log_levels:
+        org.opendaylight.genius: 'TRACE'
+      opendaylight::log_max_rollover: 50
