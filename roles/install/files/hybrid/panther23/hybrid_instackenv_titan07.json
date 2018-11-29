@@ -1,15 +1,18 @@
 {
     "nodes":[
         {
+            "mac":[
+                "14:02:ec:7c:71:11"
+            ],
             "name":"compute-0",
-            "cpu":"8",
-            "memory":"8192",
-            "disk":"50",
+            "cpu":"32",
+            "memory":"125000",
+            "disk":"300",
             "arch":"x86_64",
             "pm_type":"pxe_ipmitool",
             "pm_user":"admin",
             "pm_password":"admin",
-            "pm_addr":"10.46.2.43"
+            "pm_addr":"10.46.2.45"
         }
     ]
 }
