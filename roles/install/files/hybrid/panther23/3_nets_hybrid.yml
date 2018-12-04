@@ -1,13 +1,25 @@
+# The following structure used for the hybrid deployments,
+# where Undercloud and Controllers are virtual, Computes baremetal
+# and the networks are bridged outside of the local hypervisor host.
+# The separation of the networks are the following:
+# * br-ctlplane
+# * br-external
+# * br-management
 ---
 networks:
     net1:
-        external_connectivity: no
-        name: "data"
-        ip_address: "192.168.24.254"
-        netmask: "255.255.255.0"
-        nic: enp6s0f1 #Extra
-        forward: bridge #Extra
+        name: br-ctlplane
+        forward: bridge
+        nic: enp6s0f1
+        ip_address: 192.168.24.150
+        netmask: 255.255.255.0
     net2:
+        name: "external"
+        forward: bridge
+        ip_address: "10.46.23.129"
+        netmask: "255.255.255.192"
+        nic: vlan316
+    net3:
         external_connectivity: yes
         name: "management"
         ip_address: "172.16.0.1"
@@ -22,42 +34,21 @@ networks:
         floating_ip:
             start: "172.16.0.101"
             end: "172.16.0.150"
-    net3:
-        external_connectivity: yes
-        name: "external"
-        forward: bridge
-        ip_address: "10.46.23.129"
-        netmask: "255.255.255.192"
-        nic: enp6s0f0.316
 
 nodes:
-    default:
+    undercloud:
         interfaces:
-            - network: "data"
-            - network: "management"
-            - network: "external"
-        external_network:
-            network: "management"
-    novacontrol:
-        interfaces:
-            - network: "data"
+            - network: "br-ctlplane"
+              bridged: yes
             - network: "management"
         external_network:
             network: "management"
-    odl:
+    controller:
         interfaces:
+            - network: "br-ctlplane"
+              bridged: yes
+            - network: "external"
+              bridged: yes
             - network: "management"
         external_network:
             network: "management"
-    cfme:
-        interfaces:
-            - network: "external"
-            - network: "data"
-        external_network:
-            network: "external"
-    cfme_tester:
-        interfaces:
-            - network: "external"
-            - network: "data"
-        external_network:
-            network: "external"
