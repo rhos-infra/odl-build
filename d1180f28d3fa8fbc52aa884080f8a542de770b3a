@@ -1,0 +1,8 @@
+Code-Review+1: Janki <jchhatba@redhat.com>
+Code-Review+2: Waldemar Znoinski <wznoinsk@redhat.com>
+Verified+1: Waldemar Znoinski <wznoinsk@redhat.com>
+Submitted-by: Waldemar Znoinski <wznoinsk@redhat.com>
+Submitted-at: Wed, 05 Dec 2018 10:51:48 +0000
+Reviewed-on: https://review.gerrithub.io/436101
+Project: rhos-infra/opendaylight
+Branch: refs/heads/master
