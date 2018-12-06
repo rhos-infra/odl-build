@@ -1,4 +1,6 @@
-# This is a template for IPv6 deployments over ALL networks.
+# This is a template for IPv6 deployments over underlay network.
+# Tenant network is still IPv4.
+
 parameter_defaults:
     ControlPlaneDefaultRoute: 192.168.24.1
     ControlPlaneSubnetCidr: '24'
@@ -32,11 +34,10 @@ parameter_defaults:
     StorageNetCidr: fd00:fd00:fd00:3000::/64
     StorageNetworkVlanID: 30
     TenantAllocationPools:
-    -   end: fd00:fd00:fd00:5000:aaaa:aaaa:ffff:fffe
-        start: fd00:fd00:fd00:5000::10
-    TenantNetCidr: fd00:fd00:fd00:5000::/64
+    -   end: 172.17.2.149
+        start: 172.17.2.10
+    TenantNetCidr: 172.17.2.0/24
     TenantNetworkVlanID: 50
-    OpenDaylightEnableIPv6Deployment: True
 resource_registry:
     OS::TripleO::BlockStorage::Net::SoftwareConfig: three-nics-vlans/cinder-storage.yaml
     OS::TripleO::CephStorage::Net::SoftwareConfig: three-nics-vlans/ceph-storage.yaml
