@@ -14,6 +14,7 @@ networks:
         ip_address: 192.168.24.150
         netmask: 255.255.255.0
     net2:
+        external_connectivity: yes
         name: "external"
         forward: bridge
         ip_address: "10.46.23.129"

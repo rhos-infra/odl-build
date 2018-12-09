@@ -29,7 +29,7 @@ parameter_defaults:
 
     # the gateway that Overcloud nodes will use to connect to external (IT/lab/internet) networks could be either the IP of the hypervisor given by IT/lab DHCP
     # or a gateway IP that IT/lab has created specifically for this hybrid/baremetal deployment
-    ExternalInterfaceDefaultRoute: 10.46.23.190
+    ExternalInterfaceDefaultRoute: 10.46.23.129
     ExternalNetCidr: 10.46.23.190/26
 
     # if the interface (the nic) used for 'external' network (as configured via infrared virsh command) is a physical one, then the VlanID is the one assigned by the IT/lab ppl for that nic
