@@ -1,13 +1,45 @@
+resource_registry:
+  OS::TripleO::ComputeSriov::Net::SoftwareConfig: network/nic-configs/compute.yaml
+
 parameter_defaults:
+  # the SR-IOV part
+  # NOTE: this file should be used together with https://github.com/openstack/tripleo-heat-templates/blob/master/environments/services/neutron-opendaylight-sriov.yaml
+  # when deploying overcloud
+
+  # more info at https://docs.openstack.org/kolla-ansible/latest/reference/networking/sriov.html
+  # and https://docs.openstack.org/neutron/pike/admin/config-sriov.html
+
+  # we use ComputeSriov (https://github.com/openstack/tripleo-heat-templates/blob/master/roles/ComputeSriov.yaml) instead of plain Compute role
+  # ComputeSriov role includes running Neutron Sriov Agent and Host Config required for SRIOV to work on the compute nodes
+  ComputeSriovHostnameFormat: 'computesriov-%index%'
+  ComputeSriovCount: 2
+
+  # make sure we have hugepages available on overcloud compute hosts (they're required for DPDK and probably some other testing)
+  # as per https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt:
+  # <size> must be specified in bytes with optional scale suffix [kKmMgG]
+  ComputeSriovParameters:
+    KernelArgs: "default_hugepagesz=1G hugepagesz=1G hugepages=32 iommu=pt intel_iommu=on"
+    # ComputeSriov Tripleo Role has a default 'TunedProfileName: "cpu-partitioning"' defined which required 'isolated_cores' to be set
+    # in tuned conf file (more info: https://www.mankier.com/7/tuned-profiles-cpu-partitioning#isolated_cores=), we can do it using IsolCpusList tripleo param
+    # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/advanced_overcloud_customization/index#rtc-deploying is describing
+    # a Compute Real Time Tripleo Role but it's useful in explaining the IsolCpusList/NovaVcpuPinSet parameters
+    IsolCpusList: "1-10"
+    NovaVcpuPinSet: "1-10"
+
   # Add PciPassthroughFilter to the scheduler default filters
   NovaSchedulerDefaultFilters: ['RetryFilter','AvailabilityZoneFilter','RamFilter','ComputeFilter','ComputeCapabilitiesFilter','ImagePropertiesFilter','ServerGroupAntiAffinityFilter','ServerGroupAffinityFilter','PciPassthroughFilter']
   NovaSchedulerAvailableFilters: ["nova.scheduler.filters.all_filters","nova.scheduler.filters.pci_passthrough_filter.PciPassthroughFilter"]
 
-  NeutronPhysicalDevMappings: "datacentre:ens2f0"
-
-  # Number of VFs that needs to be configured for a physical interface
-  NeutronSriovNumVFs: "ens2f0:5"
-
   NovaPCIPassthrough:
     - devname: "ens2f0"
       physical_network: "datacentre"
+
+  # Number of VFs that Neutron will spawn out of the NIC
+  # https://github.com/openstack/tripleo-heat-templates/blob/bf48c36bc4e78f19ed4c488b8174b03ccbf5a4d7/puppet/services/neutron-sriov-agent.yaml#L57
+  NeutronSriovNumVFs: "ens2f0:5"
+
+  # https://github.com/openstack/tripleo-heat-templates/blob/bf48c36bc4e78f19ed4c488b8174b03ccbf5a4d7/puppet/services/neutron-sriov-agent.yaml#L34
+  NeutronPhysicalDevMappings: "datacentre:ens2f0"
+
+  # TODO
+#  NeutronSupportedPCIVendorDevs

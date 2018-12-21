@@ -15,7 +15,8 @@ parameter_defaults:
     # NOTE: when your networks (net1, net2, etc.) on the hypervisor get created as part of 'infrared virsh' command and they have
     # 'dhcp:' option specificed then this will make dhcp+dns server running on that interface/IP - then you could use this IP in the below
     # DnsServers param
-    DnsServers: [ "10.46.0.31", "10.46.0.32" ]
+    # NOTE2: using 8.8.8.8 a secondary DNS in case Red Hat provided DNS is down
+    DnsServers: [ "10.46.0.31", "8.8.8.8" ]
 
     # IP of the nova_api that also serves as metadata service, the nova_api which deployed Overcloud is running on Undercloud hence
     # its IP should be specified here
@@ -42,10 +43,13 @@ parameter_defaults:
     InternalApiNetCidr: 172.17.162.0/24
     InternalApiNetworkVlanID: 162
 
-    NeutronExternalNetworkBridge: ''''''
-    NeutronNetworkType: vxlan
-    NeutronTunnelTypes: vxlan
-    OpenDaylightProviderMappings: datacentre:br-ex
+    # leave it empty since external connectivity is done by OpenDaylight
+    NeutronExternalNetworkBridge: "''"
+
+    NeutronNetworkType: 'vlan,flat'
+    NeutronNetworkVLANRanges: 'tenant:165:169,datacentre:316:316,datacentre:1000:1009'
+    NeutronTunnelTypes: ''
+    OpenDaylightProviderMappings: 'tenant:vlan165,datacentre:br-ex'
     StorageAllocationPools:
     -   end: 172.17.163.200
         start: 172.17.163.10
@@ -62,6 +66,15 @@ parameter_defaults:
     TenantNetCidr: 172.17.165.0/24
     TenantNetworkVlanID: 165
 
+    # tweaks
+    # ssh is faster when it doesn't do dns lookups on every connection
+    SshServerOptions:
+        UseDns: 'no'
+    NtpServer: clock.redhat.com
+
+    # this number has to equal or smaller to the number of VMs created (i.e.: by infrared virsh) for controller node
+    ControllerHostnameFormat: 'controller-%index%'
+    OvercloudControlFlavor: controller
+
 resource_registry:
-    OS::TripleO::Compute::Net::SoftwareConfig: nic-configs/compute.yaml
     OS::TripleO::Controller::Net::SoftwareConfig: nic-configs/controller.yaml
