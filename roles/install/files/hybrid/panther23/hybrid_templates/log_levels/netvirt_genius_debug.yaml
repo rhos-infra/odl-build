@@ -5,4 +5,5 @@ parameter_defaults:
       opendaylight::log_levels:
         org.opendaylight.netvirt: 'DEBUG'
         org.opendaylight.genius: 'DEBUG'
-      opendaylight::log_max_rollover: 50
+      opendaylight::log_max_rollover: 4
+      opendaylight::log_max_size: 500

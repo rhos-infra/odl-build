@@ -4,4 +4,5 @@ parameter_defaults:
     ExtraConfig:
       opendaylight::log_levels:
         org.opendaylight.genius: 'TRACE'
-      opendaylight::log_max_rollover: 50
+      opendaylight::log_max_rollover: 4
+      opendaylight::log_max_size: 500
