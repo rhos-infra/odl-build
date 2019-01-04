@@ -5,4 +5,4 @@ parameter_defaults:
       opendaylight::log_levels:
         org.opendaylight.openflowplugin.impl: 'TRACE'
       opendaylight::log_max_rollover: 4
-      opendaylight::log_max_size: 500
+      opendaylight::log_max_size: '500MB'
