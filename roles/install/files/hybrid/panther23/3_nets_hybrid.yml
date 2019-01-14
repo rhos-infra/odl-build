@@ -24,7 +24,7 @@ networks:
 
         # the hypervisor should have only a real physical NIC attached here (not a vlaned nic), otherwise the packets will be encapsulated in vlan twice:
         # once inside the controller-0 then by the nic on the hypervisor causing things not to work
-        nic: enp6s0f0
+        nic: eno2
 
         # NOTE: make sure there is _not_ a vlan interface created on the NIC that's connected to the VLANed external network otherwise that vlan interface will be
         # catching all the traffic instead of the traffic coming down the 'external' bridge (and to overcloud controllers)
