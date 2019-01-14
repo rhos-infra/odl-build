@@ -7,7 +7,7 @@ parameter_defaults:
   # when deploying overcloud
 
   # more info at https://docs.openstack.org/kolla-ansible/latest/reference/networking/sriov.html
-  # and https://docs.openstack.org/neutron/pike/admin/config-sriov.html
+  # and https://docs.openstack.org/neutron/rocky/admin/config-sriov.html
 
   # we use ComputeSriov (https://github.com/openstack/tripleo-heat-templates/blob/master/roles/ComputeSriov.yaml) instead of plain Compute role
   # ComputeSriov role includes running Neutron Sriov Agent and Host Config required for SRIOV to work on the compute nodes
@@ -23,23 +23,26 @@ parameter_defaults:
     # in tuned conf file (more info: https://www.mankier.com/7/tuned-profiles-cpu-partitioning#isolated_cores=), we can do it using IsolCpusList tripleo param
     # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/advanced_overcloud_customization/index#rtc-deploying is describing
     # a Compute Real Time Tripleo Role but it's useful in explaining the IsolCpusList/NovaVcpuPinSet parameters
-    IsolCpusList: "1-10"
-    NovaVcpuPinSet: "1-10"
+    IsolCpusList: "1-20"
+    NovaVcpuPinSet: "1-20"
 
   # Add PciPassthroughFilter to the scheduler default filters
   NovaSchedulerDefaultFilters: ['RetryFilter','AvailabilityZoneFilter','RamFilter','ComputeFilter','ComputeCapabilitiesFilter','ImagePropertiesFilter','ServerGroupAntiAffinityFilter','ServerGroupAffinityFilter','PciPassthroughFilter']
   NovaSchedulerAvailableFilters: ["nova.scheduler.filters.all_filters","nova.scheduler.filters.pci_passthrough_filter.PciPassthroughFilter"]
 
   NovaPCIPassthrough:
-    - devname: "ens2f0"
+    - devname: "ens2f1"
       physical_network: "datacentre"
 
   # Number of VFs that Neutron will spawn out of the NIC
   # https://github.com/openstack/tripleo-heat-templates/blob/bf48c36bc4e78f19ed4c488b8174b03ccbf5a4d7/puppet/services/neutron-sriov-agent.yaml#L57
-  NeutronSriovNumVFs: "ens2f0:5"
+  #
+  # more info on switchdev: https://docs.openstack.org/neutron/rocky/admin/config-ovs-offload.html#using-open-vswitch-hardware-offloading
+  # and how tripleo enables it: https://github.com/openstack/puppet-tripleo/blob/a4128377b174bb3ba2fda05e223647978a4b1d96/lib/puppet/provider/sriov_vf_config/numvfs.rb#L65-L70
+  NeutronSriovNumVFs: "ens2f1:5:switchdev"
 
   # https://github.com/openstack/tripleo-heat-templates/blob/bf48c36bc4e78f19ed4c488b8174b03ccbf5a4d7/puppet/services/neutron-sriov-agent.yaml#L34
-  NeutronPhysicalDevMappings: "datacentre:ens2f0"
+  NeutronPhysicalDevMappings: "datacentre:ens2f1"
 
   # TODO
 #  NeutronSupportedPCIVendorDevs
