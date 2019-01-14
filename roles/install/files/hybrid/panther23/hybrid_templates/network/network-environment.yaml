@@ -1,3 +1,9 @@
+# NOTEs about these hybrid+sriov setups
+# 1. the host (hypervisor), panther23 in this case, will _not_ have a physical nor virtual NIC configured with vlans mentioned in
+# https://docs.google.com/spreadsheets/d/1PUvecYoXV80yULXlgzgK2YKqYy63R2gKUM2KngPwC58/edit#gid=0 (i.e.: 316, 325-329)
+# only the overcloud nodes (controllers, compute(sriov)) ones will have interfaces with those vlans so they can communicate with each
+# other and with the VLAN's gateway (10.46.23.190 in this case)
+
 parameter_defaults:
     # it's more of a personal preference but using UTC is the safest bet when it comes to comparing timestamps between overcloud nodes
     # and other services (on undercloud, overcloud container, external world (i.e.: laptop) etc.) when troubleshooting issues
@@ -42,13 +48,17 @@ parameter_defaults:
         start: 172.17.162.10
     InternalApiNetCidr: 172.17.162.0/24
     InternalApiNetworkVlanID: 162
+    NeutronPhysicalDevMappings: "datacentre:ens2f1"
 
-    # leave it empty since external connectivity is done by OpenDaylight
+    # leave it empty because external connectivity is done by OpenDaylight
     NeutronExternalNetworkBridge: "''"
 
     NeutronNetworkType: 'vlan,flat'
-    NeutronNetworkVLANRanges: 'tenant:165:169,datacentre:316:316,datacentre:1000:1009'
+    NeutronNetworkVLANRanges: 'tenant:165:169,datacentre:325:329'
     NeutronTunnelTypes: ''
+
+    # more info: https://github.com/openstack/puppet-neutron/blob/master/manifests/plugins/ovs/opendaylight.pp#L26
+    # and https://docs.opendaylight.org/en/stable-nitrogen/submodules/netvirt/docs/user-guide/bridge-configuration.html#provider-networks
     OpenDaylightProviderMappings: 'tenant:vlan165,datacentre:br-ex'
     StorageAllocationPools:
     -   end: 172.17.163.200
