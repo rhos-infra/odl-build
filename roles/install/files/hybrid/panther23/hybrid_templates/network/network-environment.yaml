@@ -82,7 +82,7 @@ parameter_defaults:
         UseDns: 'no'
     NtpServer: clock.redhat.com
 
-    # this number has to equal or smaller to the number of VMs created (i.e.: by infrared virsh) for controller node
+    # this number has to equal or smaller to the number of controller VMs created (i.e.: by infrared virsh)
     ControllerHostnameFormat: 'controller-%index%'
     OvercloudControlFlavor: controller
 
